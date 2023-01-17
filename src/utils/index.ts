@@ -1,2 +1,2 @@
 export { getPort } from './getPort';
-export { getID, validateID } from './idHelper';
+export { getAndValidateID } from './getAndValidateID';
