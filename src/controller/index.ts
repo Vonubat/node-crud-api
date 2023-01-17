@@ -1,10 +1,14 @@
 import { IncomingMessage, ServerResponse } from 'http';
 
 class Controller {
-  static responseSuccess = (response: ServerResponse<IncomingMessage>, statusCode: number, data?: string): void => {
+  static responseSuccess = (
+    response: ServerResponse<IncomingMessage>,
+    statusCode: number,
+    data?: unknown[] | unknown,
+  ): void => {
     response.setHeader('Content-Type', 'application/json');
     response.statusCode = statusCode;
-    response.end(data);
+    response.end(JSON.stringify(data));
   };
 
   static responseError = (

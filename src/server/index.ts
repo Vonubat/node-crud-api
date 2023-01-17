@@ -1,24 +1,18 @@
-import http from 'http';
-import { HTTPMethods } from '../constants';
+import { IncomingMessage, ServerResponse, createServer } from 'http';
+import { USER_ENDPOINT } from '../constants';
 import { getPort } from '../utils';
 
 export class Server {
   private port: number = getPort();
 
-  private server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse> = http.createServer(
-    (request: http.IncomingMessage, response: http.ServerResponse): void => {
+  private server = createServer(
+    async (request: IncomingMessage, response: ServerResponse<IncomingMessage>): Promise<void> => {
       try {
-        switch (request.method) {
-          case HTTPMethods.GET:
-            break;
-          case HTTPMethods.POST:
-            break;
-          case HTTPMethods.PUT:
-            break;
-          case HTTPMethods.DELETE:
-            break;
-          default:
-            throw new Error();
+        const { url } = request;
+
+        if (url?.startsWith(USER_ENDPOINT)) {
+          console.log(url);
+          response.end();
         }
       } catch {
         throw new Error();
