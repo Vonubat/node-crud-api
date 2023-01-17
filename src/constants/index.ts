@@ -1,5 +1,8 @@
 export const DEFAULT_PORT = 4000;
-export const USER_ENDPOINT = '/api/users';
+
+export const enum Endpoints {
+  USERS = '/api/users',
+}
 
 export const enum HTTPMethods {
   GET = 'GET',

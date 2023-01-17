@@ -1,5 +1,5 @@
 import { IncomingMessage, ServerResponse, createServer } from 'http';
-import { ErrorMessages, StatusCodes, USER_ENDPOINT } from '../constants';
+import { ErrorMessages, StatusCodes, Endpoints } from '../constants';
 import { responseError } from '../controller';
 import { UserService } from '../services';
 import { ServicesDI } from '../types';
@@ -23,7 +23,7 @@ export class Server {
       try {
         const { url } = request;
 
-        if (url?.startsWith(USER_ENDPOINT)) {
+        if (url?.startsWith(Endpoints.USERS)) {
           this.userService?.execute(request, response);
         } else {
           throw new Error(ErrorMessages.INVALID_ENDPOINT);

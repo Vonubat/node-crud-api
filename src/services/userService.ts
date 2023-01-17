@@ -1,8 +1,7 @@
-import { IncomingMessage, ServerResponse } from 'http';
 import { v4 as UUID } from 'uuid';
 import { ServiceMethod, User, UserDto } from '../types';
 import { responseSuccess, responseError } from '../controller';
-import { ErrorMessages, HTTPMethods, StatusCodes, USER_ENDPOINT } from '../constants';
+import { ErrorMessages, HTTPMethods, StatusCodes, Endpoints } from '../constants';
 import { getAndValidateID, validateUserBody } from '../utils';
 
 export class UserService {
@@ -10,7 +9,7 @@ export class UserService {
 
   private get: ServiceMethod = async (request, response) => {
     const { url } = request;
-    if (url === USER_ENDPOINT) {
+    if (url === Endpoints.USERS) {
       return responseSuccess(response, StatusCodes.OK, this.data);
     }
 
@@ -29,7 +28,7 @@ export class UserService {
 
   private create: ServiceMethod = async (request, response) => {
     const { url } = request;
-    if (url !== USER_ENDPOINT) {
+    if (url !== Endpoints.USERS) {
       return responseError(response, StatusCodes.NOT_FOUND, ErrorMessages.INVALID_ENDPOINT);
     }
 
@@ -93,22 +92,28 @@ export class UserService {
     responseSuccess(response, StatusCodes.NO_CONTENT);
   };
 
-  public execute = async (request: IncomingMessage, response: ServerResponse<IncomingMessage>): Promise<void> => {
-    switch (request.method) {
-      case HTTPMethods.GET:
-        this.get(request, response);
-        break;
-      case HTTPMethods.POST:
-        this.create(request, response);
-        break;
-      case HTTPMethods.PUT:
-        this.update(request, response);
-        break;
-      case HTTPMethods.DELETE:
-        this.delete(request, response);
-        break;
-      default:
-        throw new Error();
+  public execute: ServiceMethod = async (request, response) => {
+    try {
+      switch (request.method) {
+        case HTTPMethods.GET:
+          this.get(request, response);
+          break;
+        case HTTPMethods.POST:
+          this.create(request, response);
+          break;
+        case HTTPMethods.PUT:
+          this.update(request, response);
+          break;
+        case HTTPMethods.DELETE:
+          this.delete(request, response);
+          break;
+        default:
+          throw new Error(ErrorMessages.INVALID_METHOD);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        responseError(response, StatusCodes.INTERNAL, error.message);
+      }
     }
   };
 }
