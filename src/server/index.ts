@@ -1,19 +1,37 @@
 import http from 'http';
+import { HTTPMethods } from '../constants';
+import { User } from '../types';
+import { getPort } from '../utils';
 
-export const server = http.createServer(async (req, res) => {
-  //set the request route
-  if (req.url === '/api' && req.method === 'GET') {
-    //response headers
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    //set the response
-    res.write('Hi there, This is a Vanilla Node.js API');
-    //end the response
-    res.end();
-  }
+export class Server {
+  private users: User[] = [];
 
-  // If no route present
-  else {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ message: 'Route not found' }));
+  private port: number = getPort();
+
+  private server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse> = http.createServer(
+    (request: http.IncomingMessage, response: http.ServerResponse): void => {
+      try {
+        switch (request.method) {
+          case HTTPMethods.GET:
+            break;
+          case HTTPMethods.POST:
+            break;
+          case HTTPMethods.PUT:
+            break;
+          case HTTPMethods.DELETE:
+            break;
+          default:
+            throw new Error();
+        }
+      } catch {
+        throw new Error();
+      }
+    },
+  );
+
+  public start(): void {
+    this.server.listen(this.port, (): void => {
+      console.log(`Server started on port: ${this.port}`);
+    });
   }
-});
+}

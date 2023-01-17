@@ -1,8 +1,4 @@
-import { server } from './server';
-import { getPort } from './utils';
+import { Server } from './server';
 
-const PORT = getPort();
-
-server.listen(PORT, (): void => {
-  console.log(`Server started on port: ${PORT}`);
-});
+const server = new Server();
+server.start();
