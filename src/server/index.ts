@@ -1,11 +1,8 @@
 import http from 'http';
 import { HTTPMethods } from '../constants';
-import { User } from '../types';
 import { getPort } from '../utils';
 
 export class Server {
-  private users: User[] = [];
-
   private port: number = getPort();
 
   private server: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse> = http.createServer(
@@ -29,9 +26,9 @@ export class Server {
     },
   );
 
-  public start(): void {
+  public start = (): void => {
     this.server.listen(this.port, (): void => {
       console.log(`Server started on port: ${this.port}`);
     });
-  }
+  };
 }
