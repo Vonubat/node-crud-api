@@ -1,8 +1,21 @@
 import { IncomingMessage, ServerResponse, createServer } from 'http';
-import { USER_ENDPOINT } from '../constants';
+import { ErrorMessages, StatusCodes, USER_ENDPOINT } from '../constants';
+import { responseError } from '../controller';
+import { UserService } from '../services';
+import { ServicesDI } from '../types';
 import { getPort } from '../utils';
 
 export class Server {
+  userService: UserService | undefined;
+
+  constructor(services: ServicesDI) {
+    services.forEach((service: UserService): void => {
+      if (service instanceof UserService) {
+        this.userService = service;
+      }
+    });
+  }
+
   private port: number = getPort();
 
   private server = createServer(
@@ -11,11 +24,14 @@ export class Server {
         const { url } = request;
 
         if (url?.startsWith(USER_ENDPOINT)) {
-          console.log(url);
-          response.end();
+          this.userService?.execute(request, response);
+        } else {
+          throw new Error(ErrorMessages.INVALID_ENDPOINT);
         }
-      } catch {
-        throw new Error();
+      } catch (error) {
+        if (error instanceof Error) {
+          responseError(response, StatusCodes.NOT_FOUND, error.message);
+        }
       }
     },
   );
