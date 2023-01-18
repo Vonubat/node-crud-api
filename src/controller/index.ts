@@ -9,6 +9,10 @@ class Controller {
     response.setHeader('Content-Type', 'application/json');
     response.statusCode = statusCode;
     response.end(JSON.stringify(data));
+
+    console.log(`\n\n\x1b[33mSuccessful response, status code:\x1b[0m \x1b[32m${statusCode}\x1b[0m`);
+    console.log(`\x1b[34mResponse data:\x1b[0m`);
+    console.dir(data ? data : 'NO CONTENT');
   };
 
   static responseError = (
@@ -19,6 +23,9 @@ class Controller {
     response.statusMessage = errorMessage;
     response.statusCode = statusCode;
     response.end();
+
+    console.log(`\n\n\x1b[33mFailed response, status code:\x1b[0m \x1b[31m${statusCode}\x1b[0m`);
+    console.log(`\x1b[34mResponse message:\x1b[0m \x1b[31m${errorMessage}\x1b[0m`);
   };
 }
 
