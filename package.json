@@ -4,12 +4,11 @@
   "description": "simple CRUD API using in-memory database underneath",
   "main": "index.js",
   "scripts": {
-    "start:dev": "nodemon --exec ts-node-esm src/index.ts",
-    "start:prod": "tsc && node ./build/index.js",
-    "dev:multi": "nodemon --exec ts-node-esm src/index.ts --balancer",
-    "start:multi": "tsc && node ./build/index.js --balancer",
-    "lint": "eslint src/**/*.ts",
-    "format": "eslint src/**/*.ts --fix",
+    "start:dev": "cross-env NODE_ENV=development nodemon",
+    "start:prod": "cross-env NODE_ENV=production npm run build && node ./build/bundle.js",
+    "start:dev:multi": "cross-env MODE=cluster nodemon",
+    "start:prod:multi": "cross-env NODE_ENV=production npm run build && cross-env MODE=cluster node ./build/bundle.js",
+    "build": "webpack",
     "test": "jest"
   },
   "repository": {
@@ -38,7 +37,10 @@
     "eslint": "^8.32.0",
     "nodemon": "^2.0.20",
     "prettier": "2.8.3",
+    "ts-loader": "^9.4.2",
     "ts-node": "^10.9.1",
-    "typescript": "^4.9.4"
+    "typescript": "^4.9.4",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
   }
 }
