@@ -1,5 +1,6 @@
-import { Server } from './server';
+import { LoadBalancer } from './server/loadBalancer';
+import { Server } from './server/server';
 import { UserService } from './services';
 
-const server = new Server([new UserService()]);
+const server = new LoadBalancer();
 server.start();

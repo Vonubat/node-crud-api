@@ -6,9 +6,9 @@ import { ServicesDI } from '../types';
 import { getPort } from '../utils';
 
 export class Server {
-  userService: UserService | undefined;
+  userService!: UserService;
 
-  constructor(services: ServicesDI) {
+  constructor(services: ServicesDI, public processWorker?: NodeJS.Process) {
     services.forEach((service: UserService): void => {
       if (service instanceof UserService) {
         this.userService = service;
@@ -16,7 +16,7 @@ export class Server {
     });
   }
 
-  private port: number = getPort();
+  public port = process.env.id ? getPort() + Number(process.env.id) : getPort();
 
   private server = createServer(
     async (request: IncomingMessage, response: ServerResponse<IncomingMessage>): Promise<void> => {
@@ -25,6 +25,7 @@ export class Server {
 
         if (url?.startsWith(Endpoints.USERS)) {
           this.userService?.execute(request, response);
+          console.log(this.port);
         } else {
           throw new Error(ErrorMessages.INVALID_ENDPOINT);
         }
