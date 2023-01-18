@@ -3,20 +3,20 @@ import { ErrorMessages, StatusCodes, Endpoints } from '../constants';
 import { responseError } from '../controller';
 import { UserService } from '../services';
 import { ServicesDI } from '../types';
-import { getPort } from '../utils';
 
 export class Server {
+  private port: number;
   userService!: UserService;
 
-  constructor(services: ServicesDI, public processWorker?: NodeJS.Process) {
+  constructor(port: number, services: ServicesDI) {
+    this.port = process.env.id ? port + Number(process.env.id) : port;
+
     services.forEach((service: UserService): void => {
       if (service instanceof UserService) {
         this.userService = service;
       }
     });
   }
-
-  public port = process.env.id ? getPort() + Number(process.env.id) : getPort();
 
   private server = createServer(
     async (request: IncomingMessage, response: ServerResponse<IncomingMessage>): Promise<void> => {

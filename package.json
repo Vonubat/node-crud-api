@@ -4,10 +4,10 @@
   "description": "simple CRUD API using in-memory database underneath",
   "main": "index.js",
   "scripts": {
-    "start:dev": "cross-env NODE_ENV=development nodemon",
-    "start:prod": "cross-env NODE_ENV=production npm run build && node ./build/bundle.js",
-    "start:dev:multi": "cross-env MODE=cluster nodemon",
-    "start:prod:multi": "cross-env NODE_ENV=production npm run build && cross-env MODE=cluster node ./build/bundle.js",
+    "start:dev": "cross-env NODE_ENV=development MODE=single nodemon",
+    "start:prod": "cross-env NODE_ENV=production MODE=single npm run build && node ./build/bundle.js",
+    "start:dev:multi": "cross-env NODE_ENV=development MODE=multi nodemon",
+    "start:prod:multi": "cross-env NODE_ENV=production MODE=multi npm run build && cross-env MODE=multi node ./build/bundle.js",
     "build": "webpack",
     "test": "jest"
   },

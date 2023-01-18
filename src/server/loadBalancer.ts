@@ -9,16 +9,21 @@ import { UserService } from '../services';
 import { responseError } from '../controller';
 
 export class LoadBalancer {
-  private port: number = getPort();
-  public users: User[] = [];
+  private readonly mode: string | undefined;
+  private readonly mainPort: number = getPort();
+  private readonly cpuQty: number = cpus().length;
+  private currentWorkerNumber: number = 0;
   private workers: Worker[] = [];
-  private currentWorkerNumber = 1;
-  private cpuNumber = cpus().length;
+  private users: User[] = [];
 
-  public balancer = createServer(
+  constructor(mode: string | undefined) {
+    this.mode = mode;
+  }
+
+  private balancer = createServer(
     async (request: IncomingMessage, response: ServerResponse<IncomingMessage>): Promise<void> => {
       try {
-        const endpoint = `http://localhost:${this.port + this.currentWorkerNumber}${request.url}`;
+        const endpoint: string = `http://localhost:${this.mainPort + this.currentWorkerNumber}${request.url}`;
 
         const clientRequest: ClientRequest = makeRequest(
           endpoint,
@@ -34,37 +39,14 @@ export class LoadBalancer {
 
         request.pipe(clientRequest);
 
-        this.currentWorkerNumber = this.currentWorkerNumber === this.cpuNumber ? 1 : this.currentWorkerNumber + 1;
+        this.currentWorkerNumber = this.currentWorkerNumber === this.cpuQty ? 0 : this.currentWorkerNumber + 1;
       } catch {
         responseError(response, StatusCodes.INTERNAL, ErrorMessages.INTERNAL);
       }
     },
   );
 
-  public start() {
-    if (cluster.isPrimary) {
-      this.balancer.listen(this.port);
-
-      for (let i = 0; i < this.cpuNumber; i++) {
-        const worker = cluster.fork({ id: i + 1 });
-
-        worker.on('message', (msg): void => {
-          this.updateUsers(msg);
-        });
-
-        this.workers.push(worker);
-      }
-    } else {
-      const server = new Server([new UserService()], process);
-      server.start();
-
-      process.on('message', (msg: User[]): void => {
-        server.userService.data = [...msg];
-      });
-    }
-  }
-
-  private updateUsers({ method, id, data }: { id: number; method: string; data: User }): void {
+  private updateUsers = ({ method, id, data }: { id: number; method: string; data: User }): void => {
     if (method === 'post') {
       this.users.push(data);
     }
@@ -78,5 +60,33 @@ export class LoadBalancer {
     }
 
     this.workers.forEach((worker) => worker.send(this.users));
-  }
+  };
+
+  public start = (): void => {
+    if (this.mode === 'multi') {
+      if (cluster.isPrimary) {
+        this.balancer.listen(this.mainPort);
+
+        for (let i = 0; i < this.cpuQty; i++) {
+          const worker = cluster.fork({ id: i + 1 });
+
+          worker.on('message', (msg): void => {
+            this.updateUsers(msg);
+          });
+
+          this.workers.push(worker);
+        }
+      } else {
+        const server = new Server(this.mainPort, [new UserService()]);
+        server.start();
+
+        process.on('message', (msg: User[]): void => {
+          server.userService.data = [...msg];
+        });
+      }
+    } else {
+      const server = new Server(this.mainPort, [new UserService()]);
+      server.start();
+    }
+  };
 }

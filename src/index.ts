@@ -1,6 +1,5 @@
-import { LoadBalancer } from './server/loadBalancer';
-import { Server } from './server/server';
-import { UserService } from './services';
+import { LoadBalancer } from './server';
 
-const server = new LoadBalancer();
+const MODE = process.env.MODE;
+const server = new LoadBalancer(MODE);
 server.start();
