@@ -9,7 +9,7 @@ export class Server {
   userService!: UserService;
 
   constructor(port: number, services: ServicesDI) {
-    this.port = process.env.id ? port + Number(process.env.id) : port;
+    this.port = process.env.increment ? port + Number(process.env.increment) : port;
 
     services.forEach((service: UserService): void => {
       if (service instanceof UserService) {

@@ -41,7 +41,7 @@ export class UserService {
         validateUserBody(buffer, response, (body: UserDto): void => {
           const newUser: User = { ...body, id: UUID() };
           this.data.push(newUser);
-          process.send && process.send({ id: Number(process.env.id), method: 'post', data: newUser });
+          process.send && process.send({ method: HTTPMethods.POST, data: newUser });
 
           return responseSuccess(response, StatusCodes.CREATED, newUser);
         });
@@ -70,7 +70,7 @@ export class UserService {
         validateUserBody(buffer, response, (body: UserDto): void => {
           const updatedUser: User = { ...body, id };
           this.data = this.data.map((item: User): User => (item.id === id ? updatedUser : item));
-          process.send && process.send({ id: Number(process.env.id), method: 'post', data: updatedUser });
+          process.send && process.send({ method: HTTPMethods.PUT, data: updatedUser });
 
           return responseSuccess(response, StatusCodes.OK, updatedUser);
         });
@@ -91,8 +91,9 @@ export class UserService {
     }
 
     this.data = this.data.filter((item: User): boolean => item.id !== user.id);
-    process.send && process.send({ id: Number(process.env.id), method: 'post', data: user });
-    responseSuccess(response, StatusCodes.NO_CONTENT);
+    process.send && process.send({ method: HTTPMethods.DELETE, data: user });
+
+    return responseSuccess(response, StatusCodes.NO_CONTENT);
   };
 
   public execute: ServiceMethod = async (request, response) => {

@@ -16,3 +16,5 @@ export interface ServiceMethod {
 }
 
 export type ServicesDI = [UserService];
+
+export type ServicesData = User[];

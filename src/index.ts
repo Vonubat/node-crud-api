@@ -1,5 +1,5 @@
 import { LoadBalancer } from './server';
 
-const MODE = process.env.MODE;
-const server = new LoadBalancer(MODE);
+const mode = process.env.MODE;
+const server = new LoadBalancer(mode);
 server.start();

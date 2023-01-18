@@ -1,11 +1,7 @@
 import { IncomingMessage, ServerResponse } from 'http';
-import { ErrorMessages, StatusCodes } from '../constants';
+import { AGE, ErrorMessages, HOBBIES, StatusCodes, USERNAME } from '../constants';
 import { responseError } from '../controller';
 import { UserDto } from '../types';
-
-const USERNAME = 'username';
-const AGE = 'age';
-const HOBBIES = 'hobbies';
 
 export const validateUserBody = (
   buffer: Buffer[],

@@ -28,3 +28,7 @@ export enum ErrorMessages {
   INVALID_BODY = 'Invalid user data',
   ID_NOT_FOUND = 'User with this id not found',
 }
+
+export const USERNAME = 'username';
+export const AGE = 'age';
+export const HOBBIES = 'hobbies';

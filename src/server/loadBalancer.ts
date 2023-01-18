@@ -1,10 +1,10 @@
 import cluster, { Worker } from 'cluster';
 import { createServer, IncomingMessage, ServerResponse, request as makeRequest, ClientRequest } from 'http';
-import { ErrorMessages, StatusCodes } from '../constants';
+import { AGE, ErrorMessages, HOBBIES, HTTPMethods, StatusCodes, USERNAME } from '../constants';
 import { cpus } from 'os';
 import { Server } from './server';
 import { getPort } from '../utils';
-import { User } from '../types';
+import { ServicesData, User } from '../types';
 import { UserService } from '../services';
 import { responseError } from '../controller';
 
@@ -28,12 +28,12 @@ export class LoadBalancer {
         const clientRequest: ClientRequest = makeRequest(
           endpoint,
           { method: request.method, headers: request.headers },
-          (res) => {
-            if (res.statusCode) {
-              response.writeHead(res.statusCode, res.statusMessage, res.headers);
+          (clientResponse: IncomingMessage): void => {
+            if (clientResponse.statusCode) {
+              response.writeHead(clientResponse.statusCode, clientResponse.statusMessage, clientResponse.headers);
             }
 
-            res.pipe(response);
+            clientResponse.pipe(response);
           },
         );
 
@@ -46,16 +46,16 @@ export class LoadBalancer {
     },
   );
 
-  private updateUsers = ({ method, id, data }: { id: number; method: string; data: User }): void => {
-    if (method === 'post') {
+  private updateDB = ({ method, data }: { method: string; data: User }): void => {
+    if (method === HTTPMethods.POST) {
       this.users.push(data);
     }
 
-    if (method === 'put') {
+    if (method === HTTPMethods.PUT) {
       this.users = this.users.map((user) => (user.id === data.id ? data : user));
     }
 
-    if (method === 'delete') {
+    if (method === HTTPMethods.DELETE) {
       this.users = this.users.filter((user) => user.id !== data.id);
     }
 
@@ -68,10 +68,10 @@ export class LoadBalancer {
         this.balancer.listen(this.mainPort);
 
         for (let i = 0; i < this.cpuQty; i++) {
-          const worker = cluster.fork({ id: i + 1 });
+          const worker = cluster.fork({ increment: i + 1 });
 
           worker.on('message', (msg): void => {
-            this.updateUsers(msg);
+            this.updateDB(msg);
           });
 
           this.workers.push(worker);
@@ -80,8 +80,14 @@ export class LoadBalancer {
         const server = new Server(this.mainPort, [new UserService()]);
         server.start();
 
-        process.on('message', (msg: User[]): void => {
-          server.userService.data = [...msg];
+        process.on('message', (data: ServicesData): void => {
+          console.log('Data:', data);
+
+          const isUserData: boolean = USERNAME in data[0] && AGE in data[0] && HOBBIES in data[0];
+
+          if (isUserData) {
+            server.userService.data = [...data];
+          }
         });
       }
     } else {
