@@ -4,7 +4,7 @@ import { AGE, ErrorMessages, HOBBIES, HTTPMethods, StatusCodes, USERNAME } from 
 import { cpus } from 'os';
 import { Server } from './server';
 import { getPort } from '../utils';
-import { ServicesData, User } from '../types';
+import { DBSchema, User, WorkerMsg } from '../types';
 import { UserService } from '../services';
 import { responseError } from '../controller';
 
@@ -14,7 +14,9 @@ export class LoadBalancer {
   private readonly cpuQty: number = cpus().length;
   private currentWorkerNumber: number = 0;
   private workers: Worker[] = [];
-  private users: User[] = [];
+  private DB: DBSchema = {
+    users: [],
+  };
 
   constructor(mode: string | undefined) {
     this.mode = mode;
@@ -46,20 +48,25 @@ export class LoadBalancer {
     },
   );
 
-  private updateDB = ({ method, data }: { method: string; data: User }): void => {
-    if (method === HTTPMethods.POST) {
-      this.users.push(data);
-    }
+  private updateDB = ({ method, data }: WorkerMsg): void => {
+    const isUserData: boolean = USERNAME in data && AGE in data && HOBBIES in data;
 
-    if (method === HTTPMethods.PUT) {
-      this.users = this.users.map((user) => (user.id === data.id ? data : user));
+    if (isUserData) {
+      switch (method) {
+        case HTTPMethods.POST:
+          this.DB.users.push(data);
+          break;
+        case HTTPMethods.PUT:
+          this.DB.users = this.DB.users.map((user: User): User => (user.id === data.id ? data : user));
+          break;
+        case HTTPMethods.DELETE:
+          this.DB.users = this.DB.users.filter((user: User): boolean => user.id !== data.id);
+          break;
+        default:
+          break;
+      }
+      this.workers.forEach((worker: Worker): boolean => worker.send(this.DB));
     }
-
-    if (method === HTTPMethods.DELETE) {
-      this.users = this.users.filter((user) => user.id !== data.id);
-    }
-
-    this.workers.forEach((worker) => worker.send(this.users));
   };
 
   public start = (): void => {
@@ -68,9 +75,9 @@ export class LoadBalancer {
         this.balancer.listen(this.mainPort);
 
         for (let i = 0; i < this.cpuQty; i++) {
-          const worker = cluster.fork({ increment: i + 1 });
+          const worker: Worker = cluster.fork({ increment: i + 1 });
 
-          worker.on('message', (msg): void => {
+          worker.on('message', (msg: WorkerMsg): void => {
             this.updateDB(msg);
           });
 
@@ -80,14 +87,8 @@ export class LoadBalancer {
         const server = new Server(this.mainPort, [new UserService()]);
         server.start();
 
-        process.on('message', (data: ServicesData): void => {
-          console.log('Data:', data);
-
-          const isUserData: boolean = USERNAME in data[0] && AGE in data[0] && HOBBIES in data[0];
-
-          if (isUserData) {
-            server.userService.data = [...data];
-          }
+        process.on('message', (DB: DBSchema): void => {
+          server.userService.data = DB.users;
         });
       }
     } else {

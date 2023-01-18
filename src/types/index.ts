@@ -1,6 +1,10 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { UserService } from '../services';
 
+export interface DBSchema {
+  users: User[];
+}
+
 export interface User extends UserDto {
   id: string;
 }
@@ -17,4 +21,9 @@ export interface ServiceMethod {
 
 export type ServicesDI = [UserService];
 
-export type ServicesData = User[];
+export type ServicesData = User;
+
+export interface WorkerMsg {
+  method: string;
+  data: ServicesData;
+}

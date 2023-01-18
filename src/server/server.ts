@@ -22,10 +22,10 @@ export class Server {
     async (request: IncomingMessage, response: ServerResponse<IncomingMessage>): Promise<void> => {
       try {
         const { url } = request;
+        process.env.executionPort = String(this.port);
 
         if (url?.startsWith(Endpoints.USERS)) {
           this.userService?.execute(request, response);
-          console.log(this.port);
         } else {
           throw new Error(ErrorMessages.INVALID_ENDPOINT);
         }
@@ -39,7 +39,7 @@ export class Server {
 
   public start = (): void => {
     this.server.listen(this.port, (): void => {
-      console.log(`Server started on port: ${this.port}`);
+      console.log(`Server started on port: ${this.port}, proccess id: #${process.pid}`);
     });
   };
 }
