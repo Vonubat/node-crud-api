@@ -68,9 +68,9 @@ export class UserService {
       .on('end', (): void => {
         validateUserBody(buffer, response, (body: UserDto): void => {
           const updatedUser: User = { ...body, id };
-          this.data = this.data.map((item: User): User => (item.id === id ? updatedUser : user));
+          this.data = this.data.map((item: User): User => (item.id === id ? updatedUser : item));
 
-          return responseSuccess(response, StatusCodes.CREATED, updatedUser);
+          return responseSuccess(response, StatusCodes.OK, updatedUser);
         });
       });
   };
