@@ -15,7 +15,7 @@ export class UserService {
 
     const id: string | null = getAndValidateID(url as string);
     if (!id) {
-      return responseError(response, StatusCodes.NOT_FOUND, ErrorMessages.INVALID_ID);
+      return responseError(response, StatusCodes.BAD_REQUEST, ErrorMessages.INVALID_ID);
     }
 
     const user: User | undefined = this.data.find((item: User): boolean => item.id === id);
@@ -52,7 +52,7 @@ export class UserService {
 
     const id: string | null = getAndValidateID(url as string);
     if (!id) {
-      return responseError(response, StatusCodes.NOT_FOUND, ErrorMessages.INVALID_ID);
+      return responseError(response, StatusCodes.BAD_REQUEST, ErrorMessages.INVALID_ID);
     }
 
     const user: User | undefined = this.data.find((item: User): boolean => item.id === id);
@@ -80,7 +80,7 @@ export class UserService {
 
     const id: string | null = getAndValidateID(url as string);
     if (!id) {
-      return responseError(response, StatusCodes.NOT_FOUND, ErrorMessages.INVALID_ID);
+      return responseError(response, StatusCodes.BAD_REQUEST, ErrorMessages.INVALID_ID);
     }
 
     const user: User | undefined = this.data.find((item: User): boolean => item.id === id);

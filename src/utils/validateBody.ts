@@ -3,6 +3,10 @@ import { ErrorMessages, StatusCodes } from '../constants';
 import { responseError } from '../controller';
 import { UserDto } from '../types';
 
+const USERNAME = 'username';
+const AGE = 'age';
+const HOBBIES = 'hobbies';
+
 export const validateUserBody = (
   buffer: Buffer[],
   response: ServerResponse<IncomingMessage>,
@@ -11,7 +15,13 @@ export const validateUserBody = (
   try {
     const body = JSON.parse(Buffer.concat(buffer).toString());
 
-    if ('username' in body && 'age' in body && 'hobbies' in body) {
+    const isCheckFieldsExist: boolean = USERNAME in body && AGE in body && HOBBIES in body;
+    const isCheckFieldsTypes: boolean =
+      typeof body.username === 'string' &&
+      typeof body.age === 'number' &&
+      body.hobbies.every((hobby: unknown): boolean => typeof hobby === 'string');
+
+    if (isCheckFieldsExist && isCheckFieldsTypes) {
       callback(body);
       return;
     }
