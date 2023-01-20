@@ -42,4 +42,8 @@ export class Server {
       console.log(`Server started on port: ${this.port}, proccess id: #${process.pid}`);
     });
   };
+
+  public getTestServer = () => {
+    return this.server;
+  };
 }

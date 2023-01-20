@@ -1,5 +1,4 @@
 import { IncomingMessage, ServerResponse } from 'http';
-import { URL } from 'url';
 
 class Controller {
   static responseSuccess = (
@@ -22,9 +21,10 @@ class Controller {
     statusCode: number,
     errorMessage: string,
   ): void => {
+    response.setHeader('Content-Type', 'application/json');
     response.statusMessage = errorMessage;
     response.statusCode = statusCode;
-    response.end();
+    response.end(JSON.stringify({ message: errorMessage }));
 
     console.log(`\n\n\Execution on port: ${process.env.executionPort}, proccess id: #${process.pid}`);
     console.log(`\x1b[33mFailed response, status code:\x1b[0m \x1b[31m${statusCode}\x1b[0m`);
