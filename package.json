@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "simple CRUD API using in-memory database underneath",
   "main": "index.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "start:dev": "cross-env NODE_ENV=development nodemon",
     "start:prod": "cross-env NODE_ENV=production npm run build && node ./build/bundle.js",
