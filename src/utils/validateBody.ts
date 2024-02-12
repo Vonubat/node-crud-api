@@ -15,6 +15,7 @@ export const validateUserBody = (
     const isCheckFieldsTypes: boolean =
       typeof body.username === 'string' &&
       typeof body.age === 'number' &&
+      Array.isArray(body.hobbies) &&
       body.hobbies.every((hobby: unknown): boolean => typeof hobby === 'string');
 
     if (isCheckFieldsExist && isCheckFieldsTypes) {
@@ -23,7 +24,7 @@ export const validateUserBody = (
     }
 
     responseError(response, StatusCodes.BAD_REQUEST, ErrorMessages.INVALID_BODY);
-  } catch {
-    responseError(response, StatusCodes.INTERNAL, ErrorMessages.INTERNAL);
+  } catch (error) {
+    responseError(response, StatusCodes.BAD_REQUEST, ErrorMessages.INVALID_BODY);
   }
 };

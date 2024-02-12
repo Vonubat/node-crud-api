@@ -2,20 +2,11 @@ import { IncomingMessage, ServerResponse, createServer } from 'http';
 import { ErrorMessages, StatusCodes, Endpoints } from '../constants';
 import { responseError } from '../controller';
 import { UserService } from '../services';
-import { ServicesDI } from '../types';
+import { User } from '../types';
 
 export class Server {
-  private port: number;
-  userService!: UserService;
-
-  constructor(port: number, services: ServicesDI) {
+  constructor(private port: number, private userService: UserService) {
     this.port = process.env.increment ? port + Number(process.env.increment) : port;
-
-    services.forEach((service: UserService): void => {
-      if (service instanceof UserService) {
-        this.userService = service;
-      }
-    });
   }
 
   private server = createServer(
@@ -45,5 +36,9 @@ export class Server {
 
   public getTestServer = () => {
     return this.server;
+  };
+
+  public setData = (data: User[]): void => {
+    this.userService.data = data;
   };
 }

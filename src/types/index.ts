@@ -19,8 +19,6 @@ export interface ServiceMethod {
   (request: IncomingMessage, response: ServerResponse<IncomingMessage>): Promise<void>;
 }
 
-export type ServicesDI = [UserService];
-
 export type ServicesData = User;
 
 export interface WorkerMsg {

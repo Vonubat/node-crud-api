@@ -5,7 +5,7 @@ import { DEFAULT_PORT, Endpoints, ErrorMessages, StatusCodes } from '../src/cons
 import { UserService } from '../src/services';
 import { UserDto } from '../src/types';
 
-const app = new Server(DEFAULT_PORT, [new UserService()]);
+const app = new Server(DEFAULT_PORT, new UserService());
 const server = app.getTestServer();
 
 const VALID_ID = UUID();

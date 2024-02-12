@@ -12,7 +12,7 @@
     "start:dev:multi": "cross-env NODE_ENV=development MODE=multi nodemon",
     "start:prod:multi": "cross-env NODE_ENV=production MODE=multi npm run build && cross-env MODE=multi node ./build/bundle.js",
     "build": "webpack",
-    "test": "jest"
+    "test": "jest --silent"
   },
   "repository": {
     "type": "git",

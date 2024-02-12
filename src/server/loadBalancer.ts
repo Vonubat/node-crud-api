@@ -1,31 +1,27 @@
 import cluster, { Worker } from 'cluster';
 import { createServer, IncomingMessage, ServerResponse, request as makeRequest, ClientRequest } from 'http';
-import { AGE, ErrorMessages, HOBBIES, HTTPMethods, StatusCodes, USERNAME } from '../constants';
 import { cpus } from 'os';
+
 import { Server } from './server';
 import { getPort } from '../utils';
-import { DBSchema, User, WorkerMsg } from '../types';
 import { UserService } from '../services';
 import { responseError } from '../controller';
+import { DBSchema, User, WorkerMsg } from '../types';
+import { AGE, ErrorMessages, HOBBIES, HTTPMethods, StatusCodes, USERNAME } from '../constants';
 
 export class LoadBalancer {
-  private readonly mode: string | undefined;
-  private readonly mainPort: number = getPort();
-  private readonly cpuQty: number = cpus().length;
-  private currentWorkerNumber: number = 0;
+  private currentWorker: number = 0;
   private workers: Worker[] = [];
   private DB: DBSchema = {
     users: [],
   };
 
-  constructor(mode: string | undefined) {
-    this.mode = mode;
-  }
+  constructor() {}
 
   private balancer = createServer(
     async (request: IncomingMessage, response: ServerResponse<IncomingMessage>): Promise<void> => {
       try {
-        const endpoint: string = `http://localhost:${this.mainPort + this.currentWorkerNumber}${request.url}`;
+        const endpoint: string = `http://localhost:${getPort() + this.currentWorker}${request.url}`;
 
         const clientRequest: ClientRequest = makeRequest(
           endpoint,
@@ -41,7 +37,8 @@ export class LoadBalancer {
 
         request.pipe(clientRequest);
 
-        this.currentWorkerNumber = this.currentWorkerNumber === this.cpuQty ? 0 : this.currentWorkerNumber + 1;
+        const cpuQty = cpus().length;
+        this.currentWorker = this.currentWorker === cpuQty ? 0 : this.currentWorker + 1;
       } catch {
         responseError(response, StatusCodes.INTERNAL, ErrorMessages.INTERNAL);
       }
@@ -69,12 +66,13 @@ export class LoadBalancer {
     }
   };
 
-  public start = (): void => {
-    if (this.mode === 'multi') {
+  private start = (mode?: string): void => {
+    if (mode === 'multi') {
       if (cluster.isPrimary) {
-        this.balancer.listen(this.mainPort);
+        this.balancer.listen(getPort());
+        const cpuQty = cpus().length;
 
-        for (let i = 0; i < this.cpuQty; i++) {
+        for (let i = 0; i < cpuQty; i++) {
           const worker: Worker = cluster.fork({ increment: i + 1 });
 
           worker.on('message', (msg: WorkerMsg): void => {
@@ -84,16 +82,20 @@ export class LoadBalancer {
           this.workers.push(worker);
         }
       } else {
-        const server = new Server(this.mainPort, [new UserService()]);
+        const server = new Server(getPort(), new UserService());
         server.start();
 
         process.on('message', (DB: DBSchema): void => {
-          server.userService.data = DB.users;
+          server.setData(DB.users);
         });
       }
     } else {
-      const server = new Server(this.mainPort, [new UserService()]);
+      const server = new Server(getPort(), new UserService());
       server.start();
     }
   };
+
+  static run(mode?: string) {
+    new LoadBalancer().start(mode);
+  }
 }
